@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Page1 extends StatefulWidget {
@@ -8,6 +9,8 @@ class Page1 extends StatefulWidget {
 }
 
 class _Page1State extends State<Page1> {
+  final user = FirebaseAuth.instance.currentUser!;
+
   @override
   void initState(){
     super.initState();
@@ -28,8 +31,28 @@ class _Page1State extends State<Page1> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               'You successfully connected to Firebase!',
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'signed ass:',
+            ),
+            const SizedBox(height: 10),
+            Text(
+              user.email!,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: (){
+                FirebaseAuth.instance.signOut();
+              }, 
+              child: const Text(
+                'SIGN OUT'
+              ),
             ),
           ]
         ),
