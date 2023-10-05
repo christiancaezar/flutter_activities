@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_2/add_data.dart';
 import 'package:flutter_application_2/employee.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_application_2/update_data.dart';
 
 class AllData extends StatefulWidget {
   const AllData({super.key});
@@ -44,7 +45,11 @@ class _AllDataState extends State<AllData> {
       children: [
         IconButton(
           onPressed: (){
-
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => UpdateData(employee: employee),
+              ),
+            );
           }, 
           icon: const Icon(Icons.edit_outlined),
         ),

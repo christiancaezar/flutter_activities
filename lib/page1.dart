@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/employee.dart';
 
 class Page1 extends StatefulWidget {
   const Page1({super.key});
@@ -36,7 +38,7 @@ class _Page1State extends State<Page1> {
             ),
             const SizedBox(height: 10),
             const Text(
-              'signed ass:',
+              'signed as:',
             ),
             const SizedBox(height: 10),
             Text(
@@ -46,6 +48,7 @@ class _Page1State extends State<Page1> {
               ),
             ),
             const SizedBox(height: 10),
+            getUserData(user.uid),
             ElevatedButton(
               onPressed: (){
                 FirebaseAuth.instance.signOut();
@@ -59,4 +62,41 @@ class _Page1State extends State<Page1> {
       ),
     );
   }
+
+  getUserData(uid){
+    var collection = FirebaseFirestore.instance.collection('Employee');
+    return StreamBuilder(
+      stream: collection.doc(uid).snapshots(), 
+      builder: (context, snapshot) {
+        if(snapshot.hasError){
+          return Text('Error = ${snapshot.error}');
+        }
+        if(snapshot.hasData){
+          final data = snapshot.data!.data();
+          final employee = Employee(
+            id: data!['id'],
+            name: data['name'],
+            email: data['email'],
+          );
+          return buildUserInfo(employee);
+        }
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+
+  buildUserInfo(Employee employee) => Column(
+    children: [
+      const Text('from firestore:'),
+      const SizedBox(height: 15),
+      Text(employee.id, style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              )),
+      const SizedBox(height: 15),
+      Text(employee.name, style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              )),
+    ],
+  );
+
 }

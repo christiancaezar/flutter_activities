@@ -1,16 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/register.dart';
+import 'package:flutter_application_2/authenticator.dart';
+import 'package:flutter_application_2/employee.dart';
+import 'package:flutter_application_2/page1.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class Register extends StatefulWidget {
+  const Register({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<Register> createState() => _RegisterState();
 }
 
-class _LoginState extends State<Login> {
-  TextEditingController usernamecontroller = TextEditingController();
+class _RegisterState extends State<Register> {
+  TextEditingController namecontroller = TextEditingController();
+  TextEditingController emailcontroller = TextEditingController();
   TextEditingController passwordcontroller = TextEditingController();
   late String errormessage;
   late bool isError;
@@ -37,16 +41,25 @@ class _LoginState extends State<Login> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'SIGN IN',
+                'REGISTER',
                 style: txtstyle,
               ),
               const SizedBox(height: 15),
               TextField(
-                controller: usernamecontroller,
+                controller: namecontroller,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: 'Enter Username',
+                  labelText: 'Enter name',
                   prefixIcon: Icon(Icons.person),
+                ),
+              ),
+              const SizedBox(height: 15),
+              TextField(
+                controller: emailcontroller,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Enter Email Address',
+                  prefixIcon: Icon(Icons.email),
                 ),
               ),
               const SizedBox(height: 15),
@@ -55,7 +68,7 @@ class _LoginState extends State<Login> {
                 controller: passwordcontroller,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: 'Enter Password',
+                  labelText: 'Enter password',
                   prefixIcon: Icon(Icons.lock),
                 ),
               ),
@@ -65,19 +78,9 @@ class _LoginState extends State<Login> {
                   minimumSize: const Size.fromHeight(50),
                 ),
                 onPressed: () {
-                  checkLogin(
-                    usernamecontroller.text,
-                    passwordcontroller.text,
-                  );
+                  registerUser();
                 },
-                child: const Text('LOGIN'),
-              ),
-              const SizedBox(height: 15),
-              TextButton(
-                onPressed: () {
-                  gotoRegister();
-                },
-                child: const Text('Register here.'),
+                child: const Text('REGISTER'),
               ),
               const SizedBox(height: 15),
               (isError)
@@ -105,43 +108,49 @@ class _LoginState extends State<Login> {
     fontSize: 38,
   );
 
-  gotoRegister() {
+  Future registerUser() async {
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailcontroller.text.trim(),
+        password: passwordcontroller.text.trim(),
+      );
+      createUser();
+      setState(() {
+        isError = false;
+        errormessage = "";
+      });
+    } on FirebaseAuthException catch (e) {
+      print(e);
+      setState(() {
+        isError = true;
+        errormessage = e.message.toString();
+      });
+    }
+  }
+
+  goToAuthenticator() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => const Register(),
+        builder: (context) => const Authenticator(),
       ),
     );
   }
 
-  Future checkLogin(username, password) async {
-    showDialog(
-      context: context,
-      useRootNavigator: false,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
+  Future createUser() async {
+    final user = FirebaseAuth.instance.currentUser!;
+    final userid = user.uid;
+    final docUser =
+        FirebaseFirestore.instance.collection('Employee').doc(userid);
+
+    final employee = Employee(
+      id: userid,
+      name: namecontroller.text,
+      email: emailcontroller.text,
     );
 
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: username,
-        password: password,
-      );
+    final json = employee.toJson();
+    await docUser.set(json);
 
-      setState(() {
-        isError = false;
-        errormessage = "";
-        Navigator.pop(context);
-      });
-    } on FirebaseAuthException catch (e) {
-      print(e);
-
-      setState(() {
-        isError = true;
-        errormessage = e.message.toString();
-        Navigator.pop(context);
-      });
-    }
+    goToAuthenticator();
   }
 }
