@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/authenticator.dart';
 import 'package:flutter_application_2/employee.dart';
-import 'package:flutter_application_2/page1.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
